@@ -1,0 +1,66 @@
+<meta charset="utf-8" />
+<h1 style="color:green">CONVERT UNICODE TO VBA STRING</h1>
+<TEXTAREA style="width:50%;height:50%;font-size:14pt" id="unicode"></TEXTAREA>
+<TEXTAREA style="float: right;width:50%;height:50%;font-size:14pt" ID="KQ"></TEXTAREA>
+<input style="display:inline-flex;width:100; height: 50;"  type="button" value="xóa" onclick="x()" /><input style="display:inline-flex;width:100; height: 50;" type="button" value="copy" onclick="copx()" />
+<div>* Place this at top on modules to use unicode messageBox:<br>
+<textarea style="width:100%;height:30%;" readonly>
+#If VBA7 Then
+    #If Win64 Then
+        Declare PtrSafe Function MessageBox Lib "user32" Alias "MessageBoxW" (ByVal hwnd As LongPtr, ByVal lpText As LongPtr, ByVal lpCaption As LongPtr, ByVal wType As Long) As Long
+    #Else
+        Declare PtrSafe Function MessageBox Lib "user32" Alias "MessageBoxW" (ByVal hwnd As Long, ByVal lpText As Long, ByVal lpCaption As Long, ByVal wType As Long) As Long
+    #End If
+#Else
+    Declare Function MessageBox Lib "user32" Alias "MessageBoxW" (ByVal hwnd As Long, ByVal lpText As Long, ByVal lpCaption As Long, ByVal wType As Long) As Long
+#End If
+
+Function msgboxw(ByVal str As String, Optional ByVal vb As VbMsgBoxStyle = vbOKOnly, Optional ByVal title As String = "") As VbMsgBoxResult
+    ' Truy?n Application.Hwnd giúp MsgBox khóa chính xác c?a s? Excel dang m?
+    #If VBA7 Then
+        Dim hwnd As LongPtr: hwnd = Application.hwnd
+    #Else
+        Dim hwnd As Long: hwnd = Application.hwnd
+    #End If
+    msgboxw = MessageBox(hwnd, StrPtr(str), StrPtr(title), vb)
+End Function
+</textarea>
+</div>
+<script>
+function x(){
+getob("unicode").value=""
+}
+function getob(id){return document.getElementById(id);}
+getob("unicode").addEventListener("keyup",function(){
+var rt="\"";
+var di=getob("unicode");
+var text=di.value;
+for(var i=0;i<text.length;i++){
+var cc=text.charCodeAt(i);
+if(cc>127){
+rt+="\"+ChrW("+cc+")+\"";
+}else{
+rt+=text[i];
+}
+}
+rt+="\"";
+rt=rt.replaceAll("+\"\"+","+");
+rt=rt.replaceAll("\"\"+","");
+rt=rt.replaceAll("+\"\"","");
+getob("KQ").value=rt;
+}
+);
+
+function copx(){
+text=getob("KQ").value;
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
+}
+</script>
